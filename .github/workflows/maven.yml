@@ -35,7 +35,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v6
       with:        
             image: demo
-            tags: actionsJMA
+            tags: v1, JWA-v2
             registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
       env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
