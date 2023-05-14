@@ -1,1 +1,22 @@
 git actionns presentation
+
+build first on ubuntu
+the on 3 os [ubuntu-latest, windows-latest, macOS-latest]
+
+syntax 
+build on: ${{matrix.os}}
+
+now push to private repo ecr or git hub
+docker login
+docker build 
+docker tag and docker push or use and action since is a common step
+serch googlr for  - docker build and push action
+
+uses: mr-smithers-excellent/docker-build-push@v6
+with:
+  image: docker-hub-repo/image-name
+  registry: docker.io
+  username: ${{ secrets.DOCKER_USERNAME }} -- github needs to authenticate with docker registry
+  password: ${{ secrets.DOCKER_PASSWORD }} --  we gonna pass secrets as placeholders
+
+  we no longer need all 3 os it was just for demo reasons ... we use ubuntu since it already has docker installed 
