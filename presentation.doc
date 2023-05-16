@@ -12,6 +12,17 @@ docker build
 docker tag and docker push or use and action since is a common step
 serch googlr for  - docker build and push action
 
+
+FROM openjdk:8-jre-alpine
+
+EXPOSE 8080
+
+RUN mkdir -p /user/app
+COPY ./target/java-maven-app-*.jar /user/app
+WORKDIR /user/app
+
+CMD java -jar java-maven-app-*.jar
+
 uses: mr-smithers-excellent/docker-build-push@v6
 with:
   image: docker-hub-repo/image-name

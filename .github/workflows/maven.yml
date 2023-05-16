@@ -22,6 +22,12 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ http://localhost:9000 }}
+
     - name: Build & push Docker image
       uses: mr-smithers-excellent/docker-build-push@v6
       with:
@@ -35,7 +41,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v6
       with:        
             image: demo
-            tags: v1, JWA-v2
+            tags: JVA1
             registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
       env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
