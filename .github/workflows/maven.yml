@@ -6,50 +6,50 @@ on:
   pull_request:
     branches: [ "main" ]
 
-    
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      - uses: actions/checkout@v3
 
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
 
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
 
-      
+      - name: Create Docker registry secret
+        run: |
+          kubectl create secret docker-registry docker-registry-secret \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=ryanduah \
+            --docker-password=Ryan@Atl1 \
+            --docker-email=ryanbonty@hotmail.com
 
-  
-    - name: Build & push Docker image
-      uses: mr-smithers-excellent/docker-build-push@v6
-      with:
-            image: ryanduah/private-app
-            tags: jma-actions
-            registry: docker.io
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: ryanduah/private-app
+          tags: jma-actions
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Build & push Docker image to AWS ECR
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:        
+          image: demo
+          tags: JVA1
+          registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-
-
-
-    - name: Build & push Docker image to AWS_ECR
-      uses: mr-smithers-excellent/docker-build-push@v6
-      with:        
-            image: demo
-            tags: JVA1
-            registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
-      env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  
-
+      - name: Deploy to Linode Kubernetes cluster
+        run: |
+          echo "$(<path/to/your/deployment.yaml)" | kubectl apply -f -
