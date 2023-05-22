@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java CI with Maven and Deploy
 
 on:
   push:
@@ -6,11 +6,8 @@ on:
   pull_request:
     branches: [ "main" ]
 
-    
-
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,33 +20,75 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Create Docker registry secret
+      run: |
+        kubectl create secret docker-registry docker-registry-secret \
+          --docker-server=https://index.docker.io/v1/ \
+          --docker-username=ryanduah \
+          --docker-password=Ryan@Atl1 \
+          --docker-email=ryanbonty@hotmail.com
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+    - name: Deploy to Linode Kubernetes
+      run: |
+        echo "$YAML_CONTENT" > deploy.yaml
+        kubectl apply -f deploy.yaml
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        YAML_CONTENT: |
+          apiVersion: v1
+          kind: ReplicationController
+          metadata:
+            labels:
+              name: java-maven
+            name: java-maven
+          spec:
+            replicas: 2
+            template:
+              metadata:
+                labels:
+                  name: java-maven
+              spec:
+                containers:
+                - image: ryanduah/private-app:jma-act1
+                  name: java-maven
+                  ports:
+                  - name: java-maven
+                    containerPort: 8080  
+                  imagePullSecrets:
+                    - name: docker-registry-secret 
 
+          ---
+          # Node Port Service
+          apiVersion: v1
+          kind: Service
+          metadata:
+            labels:
+              name: java-maven
+            name: java-maven
+          spec:
+            type: NodePort
+            ports:
+              - port: 8080
+                targetPort: 8080
+            selector:
+              name: java-maven
 
-
-      
-
-  
     - name: Build & push Docker image
       uses: mr-smithers-excellent/docker-build-push@v6
       with:
-            image: ryanduah/private-app
-            tags: jma-actions
-            registry: docker.io
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
-
-
-
-
+        image: ryanduah/private-app
+        tags: jma-actions
+        registry: docker.io
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build & push Docker image to AWS_ECR
       uses: mr-smithers-excellent/docker-build-push@v6
       with:        
-            image: demo
-            tags: JVA1
-            registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
+        image: demo
+        tags: JVA1
+        registry: 339321179920.dkr.ecr.us-east-2.amazonaws.com
       env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  
-
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
