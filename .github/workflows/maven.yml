@@ -28,13 +28,13 @@ jobs:
           --docker-password=Ryan@Atl1 \
           --docker-email=ryanbonty@hotmail.com
       env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        KUBECONFIG: ${{ LKE_KUBECONFIG }}
     - name: Deploy to Linode Kubernetes
       run: |
         echo "$YAML_CONTENT" > deploy.yaml
         kubectl apply -f deploy.yaml
       env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        KUBECONFIG: ${{ LKE_KUBECONFIG }}
         YAML_CONTENT: |
           apiVersion: v1
           kind: ReplicationController
